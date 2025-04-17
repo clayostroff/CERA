@@ -1,0 +1,9 @@
+.venv/
+
+backend/.env
+
+backend/feedback.py
+backend/temp.py
+backend/TODO.txt
+
+backend/__pycache__/

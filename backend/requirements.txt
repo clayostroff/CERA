@@ -1,0 +1,10 @@
+langchain
+langgraph
+langchain-openai
+langchain-google-genai
+pydantic==2.6.1
+tavily-python
+langsmith
+python-dotenv==1.0.1
+aiohttp
+requests
