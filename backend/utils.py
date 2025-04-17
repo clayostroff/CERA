@@ -1,13 +1,6 @@
-import os
 import asyncio
-import textwrap
-
-import requests
-import random 
-import concurrent
-import aiohttp
-import time
-import logging
+from datetime import datetime, timezone
+from textwrap import dedent
 
 from tavily import AsyncTavilyClient
 
@@ -17,11 +10,21 @@ from state import Section
 
 
 
+def get_current_utc_datetime() -> str:
+    """
+    Returns the current UTC date and time as a string formatted as YYYY-MM-DD HH:MM:SS.
+    """
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+
 def format_sections(sections: list[Section]) -> str:
-    """Formats a list of sections into a string."""
+    """
+    Formats a list of sections into a string.
+    """
     sections_as_string = ""
     for section in sections:
-        section_as_string = textwrap.dedent(f"""\
+        section_as_string = dedent(f"""\
             SECTION TITLE:
             {section.name}
             DESCRIPTION:
@@ -62,9 +65,7 @@ async def tavily_search(search_queries: list[str]) -> list[dict]:
                 "response_time": float
             }
     """
-
-    # print("tavily_search : checkpoint 1")
-
+    
     async_tavily_client = AsyncTavilyClient()
     search_tasks = []
     for query in search_queries:
@@ -78,11 +79,7 @@ async def tavily_search(search_queries: list[str]) -> list[dict]:
                 )
             )
 
-    # print("tavily_search : checkpoint 2")
-
     search_results = await asyncio.gather(*search_tasks)
-
-    # print("tavily_search : checkpoint 3")
 
     return search_results
 
@@ -113,8 +110,6 @@ def format_search_results(search_responses: list[dict]) -> str:
         str: Formatted string with deduplicated sources
     """
 
-    print("format_search_results : checkpoint 1")
-
     results = []
     for response in search_responses:
         results.extend(response['results'])
@@ -123,8 +118,6 @@ def format_search_results(search_responses: list[dict]) -> str:
     unique_sources = {source['url']: source for source in results}
 
     formatted_results = "CONTENT FROM SOURCES:\n\n"
-
-    print("format_search_results : checkpoint 2")
 
     for source in unique_sources.values():
         formatted_results += f"{'-' * 80}\n"
@@ -154,11 +147,5 @@ async def execute_searches(query_list: list[str]) -> str:
     Returns:
         str: Formatted string of search results
     """
-
-    print("execute_searches : checkpoint 1")
-
     search_results = await tavily_search(query_list)
-
-    print("execute_searches : checkpoint 2")
-
     return format_search_results(search_results)

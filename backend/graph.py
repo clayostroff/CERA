@@ -33,6 +33,7 @@ from config import Config
 
 from utils import (
     format_sections,
+    get_current_utc_datetime,
     execute_searches
 )
 
@@ -45,7 +46,7 @@ async def plan_report(state: ReportState, config: RunnableConfig) -> dict:
     1. Gets report structure from config
     2. Generates search queries with GPT-4.1
     3. Searches with Tavily for the queries
-    4. Generates a plan for the report with o3-mini
+    4. Generates a plan for the report with o4-mini
     
     Parameters:
         state: Graph state with the user's question
@@ -60,19 +61,16 @@ async def plan_report(state: ReportState, config: RunnableConfig) -> dict:
     report_structure = configurable.report_structure
     num_queries = configurable.num_queries
 
-    print("plan_report : checkpoint 1")
-
     # Search queries LLM
     llm = init_chat_model(model="gpt-4.1", model_provider="openai")
     structured_llm = llm.with_structured_output(SearchQueries)
 
     system_message = report_researcher_prompt.format(
+        current_date_and_time=get_current_utc_datetime(),
         topic=topic,
         report_structure=report_structure,
         num_queries=num_queries
     )
-
-    print("plan_report : checkpoint 2")
 
     # Generate queries as a SearchQueries object
     results = structured_llm.invoke(
@@ -84,23 +82,21 @@ async def plan_report(state: ReportState, config: RunnableConfig) -> dict:
 
     queries = [query.search_query for query in results.queries]
 
-    print("plan_report : checkpoint 3")
-
     search_results = await execute_searches(queries)
 
-    print("plan_report : checkpoint 4")
-
-    system_message = report_planner_prompt.format(topic=topic, report_structure=report_structure, context=search_results, feedback=feedback)
+    system_message = report_planner_prompt.format(
+        current_date_and_time=get_current_utc_datetime(),
+        topic=topic,
+        report_structure=report_structure,
+        context=search_results,
+        feedback=feedback
+    )
 
     human_message = """Generate the sections of the report. Your response must include a sections field containing a list of sections. Each section must include name, description, research, and content fields."""
     
     # Report planner LLM
-    # Want to use o3-mini or o4-mini but either they don't support parallel tool calling or ...
-    # Possible that they don't support structured output
-    llm = init_chat_model(model="gpt-4.1", model_provider="openai")
+    llm = init_chat_model(model="o4-mini", model_provider="openai")
     structured_llm = llm.with_structured_output(Sections)
-
-    print("plan_report : checkpoint 5")
 
     report_sections = structured_llm.invoke([
         SystemMessage(content=system_message),
@@ -110,15 +106,12 @@ async def plan_report(state: ReportState, config: RunnableConfig) -> dict:
     # Get sections
     sections = report_sections.sections
 
-    print("plan_report : checkpoint 6")
-
     # Updates sections in the report state
     return {"sections": sections}
 
 
 
 def initiate_section_writing(state: ReportState) -> Command[Literal["build_section"]]:
-    print("initiate_section_writing")
     return Command(goto = [
         Send(
             "build_section",
@@ -146,7 +139,6 @@ def generate_queries(state: SectionState, config: RunnableConfig):
         Dict containing the generated search queries
     """
 
-    print("generate_queries")
     # Get state 
     topic = state["topic"]
     section = state["section"]
@@ -161,6 +153,7 @@ def generate_queries(state: SectionState, config: RunnableConfig):
 
     # Format system instructions
     system_message = section_researcher_prompt.format(
+        current_date_and_time=get_current_utc_datetime(),
         topic=topic,
         section_topic=section.description,
         num_queries=num_queries
@@ -187,8 +180,6 @@ async def search_web(state: SectionState):
         Dict with search results and updated iteration count
     """
 
-    print("search_web")
-
     # Get state
     search_queries = state["search_queries"]
 
@@ -205,7 +196,7 @@ async def search_web(state: SectionState):
 
 
 
-def write_section(state: SectionState) -> Command[Literal[END, "search_web"]]:
+def write_section(state: SectionState) -> Command[Literal[END, "search_web"]]: # type: ignore
     """
     Writes a section of the report and evaluates if more research is needed.
 
@@ -220,14 +211,17 @@ def write_section(state: SectionState) -> Command[Literal[END, "search_web"]]:
         Command to complete section or do more research
     """
 
-    print("write_section")
-
     # Get state 
     topic = state["topic"]
     section = state["section"]
     source_content_str = state["source_content_str"]
 
-    # Format inputs
+    # Format system message
+    formatted_section_writer_prompt = section_writer_prompt.format(
+        current_date_and_time=get_current_utc_datetime()
+    )
+
+    # Format human message
     formatted_section_writer_inputs = section_writer_inputs.format(
         topic=topic,
         section_name=section.name,
@@ -241,19 +235,18 @@ def write_section(state: SectionState) -> Command[Literal[END, "search_web"]]:
         model_provider="openai" # google
     )
     section_content = llm.invoke([
-        SystemMessage(content=section_writer_prompt),
+        SystemMessage(content=formatted_section_writer_prompt),
         HumanMessage(content=formatted_section_writer_inputs)
     ])
     
     # Write content to the section object  
     section.content = section_content.content
 
-    print(section_content.content)
-
     # Grader prompt
-    section_grader_message = "Grade the report considering follow-up questions for missing information. If the grade is 'pass', return empty strings for the follow-up queries. If the grade is 'fail', provide specific search queries to gather the missing information."
+    section_grader_message = "Grade the following section of a news-style report. Consider follow-up questions for missing information. If the grade is 'pass', return empty strings for the follow-up queries. If the grade is 'fail', provide specific search queries to gather the missing information."
     
     formatted_section_grader_prompt = section_grader_prompt.format(
+        current_date_and_time=get_current_utc_datetime(),
         topic=topic,
         section_topic=section.description,
         section_content=section.content,
@@ -261,9 +254,7 @@ def write_section(state: SectionState) -> Command[Literal[END, "search_web"]]:
     )
 
     # Reasoning model for feedback
-    # Want to use o3-mini or o4-mini but either they don't support parallel tool calling or ...
-    structured_llm = init_chat_model(model="gpt-4.1", model_provider="openai").with_structured_output(Feedback)
-    # Generate feedback
+    structured_llm = init_chat_model(model="o4-mini", model_provider="openai").with_structured_output(Feedback)
     feedback = structured_llm.invoke([
         SystemMessage(content=formatted_section_grader_prompt),
         HumanMessage(content=section_grader_message)
@@ -289,21 +280,20 @@ def write_intro_and_conclusion(state: SectionState):
         Dict containing the newly written section
     """
 
-    print("write_intro_and_conclusion")
-
     topic = state["topic"]
     section = state["section"]
     finished_sections = state["finished_sections_str"]
     
     # Format system instructions
     system_message = introduction_and_conclusion_writer_prompt.format(
+        current_date_and_time=get_current_utc_datetime(),
         topic=topic,
         section_name=section.name,
         section_topic=section.description,
         context=finished_sections
     )
 
-    # gemini-2.5-pro-preview
+    # gemini-2.5-pro-exp-03-25
     # google
     llm = init_chat_model(model="gpt-4.1", model_provider="openai")
     
@@ -314,8 +304,6 @@ def write_intro_and_conclusion(state: SectionState):
     
     # Write content to the section object
     section.content = section_content.content
-
-    print(section_content.content)
 
     return {"finished_sections_list": [section]}
 
@@ -331,50 +319,7 @@ def format_sections_as_string(state: ReportState) -> dict:
     Returns:
         Dict with formatted sections as context
     """
-    print("format_sections_as_string")
     return {"finished_sections_str": format_sections(state["finished_sections_list"])}
-
-
-
-def compile_report(state: ReportState):
-    """
-    Compiles all sections of the report.
-    
-    1. Gets all sections of the report.
-    2. Orders them according to the plan
-    3. Combines them into a report.
-    
-    Parameters:
-        state: Current report state with all the sections finished
-        
-    Returns:
-        Dict containing the complete report
-    """
-
-    print("compile_report : checkpoint 1")
-
-    # Get sections
-    sections = state["sections"]
-    finished_sections = {section.name: section.content for section in state["finished_sections_list"]}
-
-    print("compile_report : checkpoint 2")
-
-    # Update sections with finished content in the original order
-    for section in sections:
-        if section.name in finished_sections:
-            section.content = finished_sections[section.name]
-        else:
-            section.content = ""
-            print("Missing section: " + section.name)
-
-    print("compile_report : checkpoint 3")
-
-    # Compile report
-    report = "\n\n".join([section.content for section in sections])
-
-    print("compile_report : checkpoint 4")
-
-    return {"finished_report": report}
 
 
 
@@ -393,8 +338,6 @@ def initiate_intro_and_conclusion_writing(state: ReportState):
         List of Send commands for parallelized section writing
     """
 
-    print("initiate_intro_and_conclusion_writing")
-
     # Writes sections that do not require research in parallel via Send()
     return [
         Send(
@@ -408,6 +351,37 @@ def initiate_intro_and_conclusion_writing(state: ReportState):
         for section in state["sections"] 
         if not section.research
     ]
+
+
+
+def compile_report(state: ReportState):
+    """
+    Compiles all sections of the report.
+    
+    1. Gets all sections of the report.
+    2. Orders them according to the plan
+    3. Combines them into a report.
+    
+    Parameters:
+        state: Current report state with all the sections finished
+        
+    Returns:
+        Dict containing the complete report
+    """
+
+    # Get sections
+    sections = state["sections"]
+    finished_sections = {section.name: section.content for section in state["finished_sections_list"]}
+
+    # Update sections with finished content in the original order
+    for section in sections:
+        if section.name in finished_sections:
+            section.content = finished_sections[section.name]
+
+    # Compile report
+    report = "\n\n".join([section.content for section in sections])
+
+    return {"finished_report": report}
 
 
 

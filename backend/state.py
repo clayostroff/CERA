@@ -14,7 +14,7 @@ class Section(BaseModel):
     )
     content: str = Field(
         description="The content of the section."
-    )   
+    )
 
 class Sections(BaseModel):
     sections: list[Section] = Field(

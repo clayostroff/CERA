@@ -2,39 +2,31 @@ import asyncio
 import os
 from dotenv import load_dotenv
 
-# Adjust the import path based on your project structure if needed
-from graph import graph 
+from graph import graph
 from state import ReportStateInput
 
 async def run_agent(topic: str):
-    """Runs the LangGraph agent for a given topic."""
-    print(f"Running agent for topic: {topic}\n{'-'*30}")
 
-    # Ensure API keys are loaded
+    # API keys
     load_dotenv()
-    if not os.getenv("OPENAI_API_KEY") or not os.getenv("TAVILY_API_KEY"):
-        print("ERROR: OPENAI_API_KEY and TAVILY_API_KEY must be set in the .env file.")
+    if not os.getenv("GOOGLE_API_KEY") or not os.getenv("OPENAI_API_KEY") or not os.getenv("TAVILY_API_KEY"):
+        print("ERROR: GOOGLE_API_KEY, OPENAI_API_KEY, and TAVILY_API_KEY must be set")
         return
 
     # Prepare the input
     inputs: ReportStateInput = {"topic": topic}
 
-    # Invoke the graph
-    # Use .ainvoke() because the graph contains async steps
+    # Invoke the graph with ainvoke() because the graph contains async steps
     try:
-        final_state = await graph.ainvoke(inputs)
-
-        # Print the final report
-        print(f"\n{'-'*30}\nFinal Report:\n{'-'*30}")
-        print(final_state["finished_report"])
+        state = await graph.ainvoke(inputs)
+        # Print the report
+        print("\n")
+        print(state["finished_report"])
+        print("\n")
 
     except Exception as e:
-        print(f"An error occurred during agent execution: {e}")
-        # Add more specific error handling if needed
+        print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    # --- Replace with your desired topic --- 
     report_topic = "Trump tariffs"
-    # ----------------------------------------
-
-    asyncio.run(run_agent(report_topic)) 
+    asyncio.run(run_agent(report_topic))

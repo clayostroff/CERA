@@ -1,4 +1,6 @@
-report_researcher_prompt = """You're doing research for a report that will answer a user's current events-related question.
+report_researcher_prompt = """You're doing research for a news-style report that will answer a user's current events-related question.
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <REPORT TOPIC>
 {topic}
@@ -11,9 +13,7 @@ report_researcher_prompt = """You're doing research for a report that will answe
 <TASK>
 Your goal is to generate {num_queries} web search queries that will help find information for planning the report's sections. 
 
-The queries you generate should:
-(1) Be related to REPORT TOPIC.
-(2) Help satisfy the requirements specified in REPORT STRUCTURE.
+Your queries should (1) be related to REPORT TOPIC and (2) help satisfy the requirements specified in REPORT STRUCTURE.
 
 Make the queries specific enough to find high-quality, relevant sources while still covering the breadth needed for the report structure.
 </TASK>
@@ -24,32 +24,32 @@ Call the SearchQueries tool.
 
 
 
-report_planner_prompt = """Write a plan for a report that is concise and focused.
+report_planner_prompt = """Write a plan for a news-style, all-you-need-to-know report (e.g. something that would be found on cnn.com or nytimes.com) that answers the user's current events-related question. The report should cover all important information while being concise and focused.
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <REPORT TOPIC>
-The topic of the report is: {topic}
+{topic}
 </REPORT TOPIC>
 
 <REPORT STRUCTURE>
-The report should follow this structure:
+Refer to this general structure. Feel free to alter it as you see fit to better address the user's question.
 {report_structure}
 </REPORT STRUCTURE>
 
 <CONTEXT>
-The following is context to help you plan the sections of the report: 
+Context to help plan the sections of the report: 
 {context}
 </CONTEXT>
 
 <TASK>
 Generate a list of sections for the report. Your plan should be focused, with no overlapping sections or unnecessary filler.
 
-For example, a good report structure COULD (though not necessarily) look like:
-(1) introduction
-(2) overview of sub-topic a
-(3) overview of sub-topic b
-(4) comparison of a and b
-(5) conclusion
-
+For example, a good report structure could (though not necessarily) look like this:
+(1) Introduction
+(2) Overview of sub-topic 1
+(3) Overview of sub-topic 2
+(4) Conclusion
 
 Fields (each section should have the following):
 * name: Name for this section of the report.
@@ -76,7 +76,9 @@ Call the Sections tool
 
 
 
-section_researcher_prompt = """You are an expert researcher crafting targeted web search queries that will gather comprehensive information for writing a section of a report that answers a user's question.
+section_researcher_prompt = """You are an assistant tasked with crafting targeted web search queries that will help gather comprehensive information for writing a section of a news-style report that answers a user's current events-related question.
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <REPORT TOPIC>
 {topic}
@@ -102,7 +104,9 @@ Call the SearchQueries tool
 
 
 
-section_writer_prompt = """Write one section of a research report that answers a user's question.
+section_writer_prompt = """Write one section of a news-style report that answers a user's current events-related question.
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <Task>
 1. Review the report topic, section name, and section topic carefully.
@@ -124,16 +128,16 @@ section_writer_prompt = """Write one section of a research report that answers a
 <Citations>
 * Assign each unique URL a single citation number in your response.
 * End with "### Sources" listing each source with corresponding numbers.
-* Number sources sequentially without gaps (1, 2, 3, ...) in the list regardless of which sources you choose.
+* Number sources sequentially without gaps (e.g. 1, 2, 3) regardless of which you choose.
 * Example:
   [1] Source Title (URL)
   [2] Source Title (URL)
 </Citations>
 
 <Final Check>
-(1) Verify that every claim is grounded in the provided source material.
-(2) Confirm each URL appears only once in the source list.
-(3) Verify that sources are numbered sequentially (1, 2, 3, ...) without any gaps.
+(1) Confirm each URL appears only once in the source list.
+(2) Verify that your claims are grounded in the provided source material.
+(3) Ensure that sources are numbered sequentially (e.g. 1, 2, 3) without gaps.
 </Final Check>"""
 
 
@@ -160,7 +164,9 @@ section_writer_inputs = """<REPORT TOPIC>
 
 
 
-section_grader_prompt = """Review a section of a reseach report relative to the specified topic:
+section_grader_prompt = """Review a section of a news-style report relative to the user's current events-related question.
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <REPORT TOPIC>
 {topic}
@@ -193,7 +199,9 @@ follow_up_queries: List[SearchQuery] = Field(
 
 
 
-introduction_and_conclusion_writer_prompt = """You are a writer making a section of a report that synthesizes information from the rest of the report. Completely avoid being meta (i.e. do not reference the report or the section you're writing). Thus, DON'T USE PHRASES SUCH AS BUT NOT LIMITED TO: "this report", "this assessment", etc.
+introduction_and_conclusion_writer_prompt = """You are a reporter writing a section of a NEWS-STYLE REPORT about a current event that synthesizes information from the rest of the report. You could be tasked with writing an introduction, a conclusion, or a summary, though only one of these (i.e. just an introduction, just a conclusion, or just a summary). 
+
+CURRENT DATE AND TIME: {current_date_and_time}
 
 <REPORT TOPIC>
 {topic}
@@ -213,30 +221,31 @@ introduction_and_conclusion_writer_prompt = """You are a writer making a section
 
 <TASK>
 Guidelines:
+* Completely avoid being meta (i.e. NEVER reference the report or section you're writing).
+* DON'T USE PHRASES SUCH AS: "this report", "this assessment", etc.
+* Focus on the most important points and key takeaways.
+* Use specific examples over general statements.
+* Obey word counts.
 
-For Introduction:
+If you're tasked with writing an introduction:
 * Use # for the report title (Markdown format).
-* Should be between 50 and 200 words.
 * Write in clear and simple language.
 * Focus on important information.
-* NO SOURCES SECTION NEEDED.
+* No sources section.
+* Use between 50 and 200 words.
 
-For Conclusion/Summary:
-* Use ## for section title (Markdown format)
-* Should be between 50 and 200 words.
-* End with specific implications.
-* NO SOURCES SECTION NEEDED.
-
-Writing Approach:
-* Obey word counts.
-* Use specific examples not general statements.
-* Focus on the most the important points and key takeaways.
+If you're tasked with writing a conclusion or summary:
+* Use ## for the section title (Markdown format).
+* Use between 50 and 200 words.
+* No sources section.
+* Provide specific implications.
 </TASK>
 
 <FINAL CHECK>
-* For Introduction: between 50 and 200 words; # for the report title; no sources section.
-* For Conclusion/Summary: between 50 and 200 words; ## for the section title; no sources section.
-* Use Markdown format.
+* Introduction: (1) between 50 and 200 words, (2) # for the report title, (3) no sources section.
+* Conclusion: (1) between 50 and 200 words, (2) ## for the section title, (3) no sources section.
 * Do not include any preamble in your response.
 * Do not include or reference word counts.
+* Use Markdown format.
+* NEVER reference the report itself or the section you're writing (i.e. don't be meta).
 </FINAL CHECK>"""
