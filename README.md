@@ -1,6 +1,6 @@
 # Current Events Research Agent
 
-A multi-node agent that generates a news-like report about current events topics.
+A multi-node agent that generates an all-you-need-to-know report about current events topics.
 
 ## Setup
 
@@ -21,7 +21,7 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-4. Create a `.env` with your API keys:
+4. Create a `.env` with your API keys
 ```env
 OPENAI_API_KEY=your_openai_api_key
 TAVILY_API_KEY=your_tavily_api_key

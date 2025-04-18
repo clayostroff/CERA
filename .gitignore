@@ -1,5 +1,7 @@
 .venv/
 
+.ds_store
+
 backend/.env
 
 backend/__pycache__/
