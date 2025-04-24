@@ -39,10 +39,10 @@ class Feedback(BaseModel):
         description="List of follow-up search queries."
     )
 
-class ReportStateInput(TypedDict):
+class ReportInputState(TypedDict):
     topic: str # Report topic
     
-class ReportStateOutput(TypedDict):
+class ReportOutputState(TypedDict):
     finished_report: str # Finished report
 
 class ReportState(TypedDict):

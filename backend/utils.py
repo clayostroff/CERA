@@ -1,10 +1,11 @@
 import asyncio
 from datetime import datetime, timezone
 from textwrap import dedent
-
-from tavily import AsyncTavilyClient
+from typing import Literal
 
 from langsmith import traceable
+
+from tavily import AsyncTavilyClient
 
 from state import Section
 
@@ -41,7 +42,7 @@ def format_sections(sections: list[Section]) -> str:
 
 
 @traceable
-async def tavily_search(search_queries: list[str]) -> list[dict]:
+async def tavily_search(search_queries: list[str], depth: Literal['basic', 'advanced'] = 'advanced') -> list[dict]:
     """
     Does parallel web searches using Tavily Search
 
@@ -72,9 +73,9 @@ async def tavily_search(search_queries: list[str]) -> list[dict]:
             search_tasks.append(
                 async_tavily_client.search(
                     query,
-                    search_depth = "advanced",
-                    topic = "general",
-                    max_results = 5,
+                    search_depth = depth,
+                    topic = "news",
+                    max_results = 3, # results per query
                     raw_content = True
                 )
             )
@@ -125,7 +126,9 @@ def format_search_results(search_responses: list[dict]) -> str:
         formatted_results += f"URL: {source['url']}\n"
         formatted_results += f"CLEANED CONTENT: {source['content']}"
 
-        raw_content = source.get('raw_content', "") or ""
+        raw_content = source.get('raw_content', '') or ""
+
+        # Potentially clean raw content with Gemini 2.0 Flash-Lite
 
         if len(raw_content) > 10000:
             raw_content = raw_content[:10000] + "... [truncated at 10000 chars]"
@@ -137,7 +140,7 @@ def format_search_results(search_responses: list[dict]) -> str:
 
 
 
-async def execute_searches(query_list: list[str]) -> str:
+async def execute_searches(query_list: list[str], depth: Literal['basic', 'advanced'] = 'advanced') -> str:
     """
     Executes web searches for a list of queries
     
@@ -147,5 +150,5 @@ async def execute_searches(query_list: list[str]) -> str:
     Returns:
         str: Formatted string of search results
     """
-    search_results = await tavily_search(query_list)
+    search_results = await tavily_search(query_list, depth)
     return format_search_results(search_results)
