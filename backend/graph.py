@@ -58,7 +58,7 @@ async def plan_report(state: ReportState) -> dict:
         dict: Generated sections
     """
     topic = state['topic']
-    feedback = state.get('feedback', '')
+    # feedback = state.get('feedback', '')
 
     # configurable = Config.from_runnable_config(config)
     # report_structure = configurable.report_structure
@@ -77,6 +77,9 @@ async def plan_report(state: ReportState) -> dict:
             * No research needed
     """)
 
+    query = [topic]
+    search_result = await execute_searches(query, depth="advanced")
+
     # Search queries LLM
     llm = init_chat_model(model="gpt-4.1", model_provider="openai")
     structured_llm = llm.with_structured_output(SearchQueries)
@@ -85,19 +88,19 @@ async def plan_report(state: ReportState) -> dict:
         current_date_and_time=get_current_utc_datetime(),
         topic=topic,
         report_structure=report_structure,
+        context=search_result,
         num_queries=num_queries
     )
 
     # Generate queries as a SearchQueries object
-    results = structured_llm.invoke(
+    search_queries_object = structured_llm.invoke(
         [
             SystemMessage(content=system_message),
             HumanMessage(content="Generate search queries that will help in planning the sections of the report.")
         ]
     )
 
-    queries = [query.search_query for query in results.queries]
-
+    queries = [query.search_query for query in search_queries_object.queries]
     search_results = await execute_searches(queries, depth="basic")
 
     system_message = report_planner_prompt.format(
@@ -105,7 +108,6 @@ async def plan_report(state: ReportState) -> dict:
         topic=topic,
         report_structure=report_structure,
         context=search_results,
-        feedback=feedback
     )
 
     human_message = """Generate the sections of the report. Your response must include a sections field containing a list of sections. Each section must include name, description, research, and content fields."""
@@ -146,7 +148,7 @@ def initiate_section_writing(state: ReportState) -> Command[Literal["build_secti
 # config: RunnableConfig
 def generate_queries(state: SectionState):
     """
-    Generates search queries using an LLM based on the section topic and description.
+    Generates search queries based on the section topic and description.
     
     Parameters:
         state: Current section state
@@ -164,7 +166,7 @@ def generate_queries(state: SectionState):
     # configurable = Config.from_runnable_config(config)
     # num_queries = configurable.queries_per_section
 
-    num_queries = 2
+    num_queries = 3
 
     # Generate queries
     llm = init_chat_model(model="gpt-4.1", model_provider="openai")

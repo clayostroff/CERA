@@ -40,10 +40,11 @@ async def stream_report(topic: str, request: Request):
 
     async def event_generator():
         try:
-            async for update in graph.astream(input_state, stream_mode="updates"):
+            # https://langchain-ai.github.io/langgraph/how-tos/streaming-subgraphs/
+            async for update in graph.astream(input_state, stream_mode="updates", subgraphs=True):
                 if await request.is_disconnected():
                     break
-                node, diff = next(iter(update.items()))
+                node, diff = next(iter(update[1].items()))
                 payload = {
                     "node": node,
                     "diff": jsonable_encoder(diff)

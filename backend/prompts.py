@@ -10,6 +10,11 @@ CURRENT DATE AND TIME: {current_date_and_time}
 {report_structure}
 </REPORT STRUCTURE>
 
+<CONTEXT>
+Web search results from just the user's question:
+{context}
+</CONTEXT>
+
 <TASK>
 Your goal is to generate {num_queries} web search queries that will help find information for planning the report's sections. 
 
@@ -64,11 +69,6 @@ Guidelines:
 
 Before returning your response, review your structure to ensure it has a logical flow and no redundant sections.
 </TASK>
-
-<FEEDBACK>
-Here is feedback on the report structure (if any):
-{feedback}
-</FEEDBACK>
 
 <FORMAT>
 Call the Sections tool 

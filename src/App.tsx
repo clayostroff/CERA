@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
 import SearchForm from './components/SearchForm';
 import ReportViewer from './components/ReportViewer';
 import ThemeToggle from './components/ThemeToggle';
 import StatusTimeline from './components/StatusTimeline';
-import { ReportStatus } from './types';
 
 function App() {
     const [darkMode, setDarkMode] = useState(() => {
@@ -14,7 +12,6 @@ function App() {
     });
     
     const [searchTopic, setSearchTopic] = useState<string | null>(null);
-    const [reportStatus, setReportStatus] = useState<ReportStatus | null>(null);
     const [timelineStep, setTimelineStep] = useState<string>('idle');
 
     const toggleDarkMode = () => {
@@ -30,34 +27,33 @@ function App() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-            <header className="bg-white dark:bg-gray-800 shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+            <header className="bg-grey-50 dark:bg-gray-900">
+                <div className="container mx-auto px-4 py-8 relative">
+                    <h1 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-2 text-5xl sm:text-5xl font-bold text-yellow-400 dark:text-white">
                         CERA
                     </h1>
-                    <ThemeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                    <div className="flex justify-end translate-y-4">
+                        <ThemeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                    </div>
                 </div>
             </header>
 
             <main className="container mx-auto px-4 py-8">
                 <SearchForm 
-                    setSearchTopic={setSearchTopic} 
-                    setReportStatus={setReportStatus}
+                    setSearchTopic={setSearchTopic}
                     setTimelineStep={setTimelineStep}
+                    currentTopic={searchTopic}
                 />
                 
                 {searchTopic && (
                     <StatusTimeline 
                         timelineStep={timelineStep}
-                        reportStatus={reportStatus}
                     />
                 )}
                 
                 {searchTopic && (
                     <ReportViewer 
-                        searchTopic={searchTopic} 
-                        reportStatus={reportStatus}
-                        setReportStatus={setReportStatus}
+                        searchTopic={searchTopic}
                         setTimelineStep={setTimelineStep}
                     />
                 )}

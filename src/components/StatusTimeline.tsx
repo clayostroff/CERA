@@ -1,73 +1,66 @@
 import React from 'react';
 import { CheckCircle, Circle, Clock } from 'lucide-react';
-import { ReportStatus } from '../types';
 
 interface StatusTimelineProps {
-    timelineStep: string;
-    reportStatus: ReportStatus | null;
+  timelineStep: string;
 }
 
-const StatusTimeline: React.FC<StatusTimelineProps> = ({ timelineStep, reportStatus }) => {
-    const steps = [
-        { id: 'plan_report', label: 'Planning report' },
-        { id: 'initiate_section_writing', label: 'Researching sections' },
-        { id: 'format_sections_as_string', label: 'Writing sections' },
-        { id: 'compile_report', label: 'Compiling report' }
-    ];
-    
-    const order = ['plan_report', 'search_web', 'write_section', 'compile_report'];
-    
-    const currentIndex =
-    timelineStep === 'complete' ? order.length : order.indexOf(timelineStep);
+const STEPS = [
+  { id: 'plan_report', label: 'Planning' },
+  { id: 'search_web', label: 'Researching' },
+  { id: 'write_section', label: 'Writing' },
+  { id: 'compile_report', label: 'Compiling' }
+];
 
-    const getStepStatus = (stepId: string) => {
-        const idx = order.indexOf(stepId);
-        if (idx < currentIndex) return 'complete';
-        if (idx === currentIndex) return 'in_progress';
-        return 'pending';
-    };
+export default function StatusTimeline({ timelineStep }: StatusTimelineProps)
+{
+  const currIdx = timelineStep === 'complete' ? STEPS.length : STEPS.findIndex(s => s.id === timelineStep);
 
-    return (
-        <div className="my-8">
-            <div className="flex items-center justify-between">
-                {steps.map((step, index) => (
-                    <React.Fragment key={step.id}>
-                        <div className="flex flex-col items-center">
-                            <div 
-                                className={`
-                                    w-8 h-8 rounded-full flex items-center justify-center
-                                    ${getStepStatus(step.id) === 'complete' ? 'bg-green-500 text-white' : 
-                                        getStepStatus(step.id) === 'in_progress' ? 'bg-blue-500 text-white' : 
-                                        'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}
-                                    transition-colors duration-300
-                                `}
-                            >
-                                {getStepStatus(step.id) === 'complete' ? (
-                                    <CheckCircle size={20} />
-                                ) : getStepStatus(step.id) === 'in_progress' ? (
-                                    <Clock size={20} />
-                                ) : (
-                                    <Circle size={20} />
-                                )}
-                            </div>
-                            <span className="mt-2 text-xs sm:text-sm text-center">{step.label}</span>
-                        </div>
-                        
-                        {index < steps.length - 1 && (
-                            <div 
-                                className={`
-                                    flex-grow h-1 mx-2
-                                    ${getStepStatus(step.id) === 'complete' ? 'bg-green-500' : 
-                                        getStepStatus(step.id) === 'in_progress' ? 'bg-blue-500' : 
-                                        'bg-gray-200 dark:bg-gray-700'}
-                                `}
-                            ></div>
-                        )}
-                    </React.Fragment>
-                ))}
+  const status = (idx: number) =>
+    idx < currIdx ? 'complete' : idx === currIdx ? 'in_progress' : 'pending';
+
+  return (
+    <div className="my-8 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg px-10 py-6 transition-colors duration-300">
+      <div className="flex items-center">
+        {STEPS.map((step, idx) => (
+          <React.Fragment key={step.id}>
+            <div className={
+              `w-9 h-9 rounded-full flex items-center justify-center transition-colors
+               ${status(idx)==='complete'    ? 'bg-lime-500 text-white' :
+                 status(idx)==='in_progress' ? 'bg-blue-500 text-white'  :
+                                               'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`
+            }>
+              {status(idx) === 'complete'    ? <CheckCircle size={20}/> :
+               status(idx) === 'in_progress' ? <Clock size={20}/> :
+                                               <Circle size={20}/>}
             </div>
-        </div>
-    );
-};
+            
+            {idx < STEPS.length - 1 && (
+              <div className={
+                `flex-grow h-1 mx-3 rounded-full transition-colors
+                 ${status(idx)==='complete'    ? 'bg-lime-500' :
+                   status(idx)==='in_progress' ? 'bg-blue-500'  :
+                                                 'bg-gray-200 dark:bg-gray-700'}`
+              }/>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      
+      <div className="flex mt-2">
+        {STEPS.map((step, idx) => (
+          <React.Fragment key={step.id}>
+            <div className="relative w-9 h-4">
+              <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap
+                               font-bold text-xs sm:text-sm text-center">
+                {step.label}
+              </span>
+            </div>
 
-export default StatusTimeline;
+            {idx < STEPS.length - 1 && <div className="flex-grow mx-2" />}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -47,7 +47,8 @@ class ReportOutputState(TypedDict):
 
 class ReportState(TypedDict):
     topic: str # Report topic
-    feedback: str # Feedback on the report plan
+    # For giving feedback on the report plan. Can be used to implement human-in-the-loop.
+    # feedback: str
     sections: list[Section] # List of report sections
     finished_sections_list: Annotated[list[Section], operator.add] # Send() key
     finished_sections_str: str # String of finished sections used to write final sections

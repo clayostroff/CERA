@@ -1,53 +1,69 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { AlertCircle, Download, Loader } from 'lucide-react';
+import { AlertCircle, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import * as htmlToImage from 'html-to-image';
 import { ReportStatus, TableOfContentsItem } from '../types';
 import TableOfContents from './TableOfContents';
 
-
 interface ReportViewerProps {
     searchTopic: string;
-    reportStatus: ReportStatus | null;
-    setReportStatus: React.Dispatch<React.SetStateAction<ReportStatus | null>>;
     setTimelineStep: React.Dispatch<React.SetStateAction<string>>;
 }
 
-
-const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, reportStatus, setReportStatus, setTimelineStep }) => {
-    
+const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, setTimelineStep }) =>
+{    
     const [report, setReport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tocItems, setTocItems] = useState<TableOfContentsItem[]>([]);
     const [tocCollapsed, setTocCollapsed] = useState(false);
     const reportRef = useRef<HTMLDivElement>(null);
-    
 
-    useEffect(() => {
+    useEffect(() =>
+    {
         if (!searchTopic) return;
-    
+
         setIsLoading(true);
         setError(null);
         setReport(null);
+
+        const STEPS = ['plan_report', 'search_web', 'write_section', 'compile_report'];
+
     
         const es = new EventSource(
             'http://localhost:8000/report?topic=' + encodeURIComponent(searchTopic)
         );
     
-        es.addEventListener('step', (evt) => {
+        es.addEventListener('step', (evt) => 
+        {
             const { node, diff } = JSON.parse(evt.data);
             
-            setTimelineStep(node);
-    
+            // LangGraph nodes in sub-graphs (i.e. sub-nodes) return compound node names
+            // build_section.search_web
+            // build_section.write_section
+            const temp = node.split('.').pop()!;
+            
+            const subnode = temp === 'plan_report' ? 'search_web'
+                : temp === 'search_web' ? 'write_section'
+                : temp === 'write_section' ? 'compile_report'
+                : temp === 'compile_report' ? 'complete'
+                : null;
+
+
+            if (subnode) {
+                setTimelineStep(prev =>
+                    STEPS.indexOf(subnode) > STEPS.indexOf(prev) ? subnode : prev
+                );
+            }
+            
             if (node === 'compile_report' && diff.finished_report) {
-                const final = diff.finished_report as string;
-                setReport(final);
+                setReport(diff.finished_report as string);
                 setIsLoading(false);
-                setTimelineStep('complete');
+                setTimelineStep('compile_report');
                 setTimeout(() => setTimelineStep('complete'), 0);
+            
                 es.close();
             }
         });
@@ -65,7 +81,6 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, reportStatus, 
             es.close();
         };
     }, [searchTopic]);
-    
     
     useEffect(() => {
         if (report) {
@@ -130,7 +145,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, reportStatus, 
                     Generating your report...
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-                    This may take a minute.
+                    This may take up to a minute.
                 </p>
             </div>
         );
@@ -173,7 +188,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, reportStatus, 
             </div>
             
             <div className="md:col-span-3" ref={reportRef}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 transition-colors">
+                <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8 transition-colors">
                     {report ? (
                         <ReactMarkdown 
                             className="markdown-content"

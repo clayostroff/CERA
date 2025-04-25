@@ -42,7 +42,7 @@ def format_sections(sections: list[Section]) -> str:
 
 
 @traceable
-async def tavily_search(search_queries: list[str], depth: Literal['basic', 'advanced'] = 'advanced') -> list[dict]:
+async def tavily_search(search_queries: list[str], depth: Literal['basic', 'advanced']) -> list[dict]:
     """
     Does parallel web searches using Tavily Search
 
@@ -140,7 +140,7 @@ def format_search_results(search_responses: list[dict]) -> str:
 
 
 
-async def execute_searches(query_list: list[str], depth: Literal['basic', 'advanced'] = 'advanced') -> str:
+async def execute_searches(query_list: list[str], depth: Literal['basic', 'advanced'] = 'basic') -> str:
     """
     Executes web searches for a list of queries
     
