@@ -28,10 +28,10 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
       </div>
       
       {!isCollapsed && (
-        <nav className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <nav className="mt-4 border-t-2 border-gray-200 dark:border-gray-700 pt-4">
           <ul className="space-y-2">
-            {items.map((item) => (
-              <li 
+            {items.map(item => (
+              <li
                 key={item.id}
                 className={`${item.level === 1 ? '' : 'ml-4'} ${item.level === 3 ? 'ml-8' : ''}`}
               >

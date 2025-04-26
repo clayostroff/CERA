@@ -61,7 +61,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     <AlertCircle className="mr-2 mt-0.5 flex-shrink-0" size={18}/>
                     <div>
                         <p className="font-bold inline">The backend server is not running. </p>
-                        <p className="inline mt-1">Please start the server with <code className="bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded">npm run start</code> in a new terminal window and refresh the page.</p>
+                        <p className="inline mt-1">Please start the server with <code className="bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded">npm run start</code> in a new terminal and refresh the page.</p>
                     </div>
                 </div>
             )}

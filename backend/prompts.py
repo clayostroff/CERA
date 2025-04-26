@@ -232,16 +232,17 @@ Guidelines:
 
 If you're tasked with writing an introduction:
 * Use # for the report title (Markdown format).
+* The report title can and likely should be different from the report topic.
 * Write in clear and simple language.
 * Focus on important information.
-* No sources section.
 * Use between 50 and 125 words.
+* No sources section.
 
 If you're tasked with writing a conclusion or summary:
 * Use ## for the section title (Markdown format).
+* Provide specific implications.
 * Use between 50 and 125 words.
 * No sources section.
-* Provide specific implications.
 </TASK>
 
 <FINAL CHECK>
