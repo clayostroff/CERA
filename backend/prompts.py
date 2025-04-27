@@ -10,12 +10,17 @@ CURRENT DATE AND TIME: {current_date_and_time}
 {report_structure}
 </REPORT STRUCTURE>
 
+<CONTEXT>
+Web search results from just the user's question:
+{context}
+</CONTEXT>
+
 <TASK>
 Your goal is to generate {num_queries} web search queries that will help find information for planning the report's sections. 
 
 Your queries should (1) be related to REPORT TOPIC and (2) help satisfy the requirements specified in REPORT STRUCTURE.
 
-Make the queries specific enough to find high-quality, relevant sources while still covering the breadth needed for the report structure.
+The queries should help find high-quality, relevant sources that cover the breadth needed to satisfy the report structure.
 </TASK>
 
 <FORMAT>
@@ -65,11 +70,6 @@ Guidelines:
 Before returning your response, review your structure to ensure it has a logical flow and no redundant sections.
 </TASK>
 
-<FEEDBACK>
-Here is feedback on the report structure (if any):
-{feedback}
-</FEEDBACK>
-
 <FORMAT>
 Call the Sections tool 
 </FORMAT>"""
@@ -95,7 +95,7 @@ The queries should:
 (1) Be related to the section's topic.
 (2) Examine different aspects of the section's topic.
 
-Make the queries specific enough to find high-quality, relevant sources.
+Design the queries to find high-quality, relevant sources.
 </TASK>
 
 <FORMAT>
@@ -119,7 +119,7 @@ CURRENT DATE AND TIME: {current_date_and_time}
 <Writing Guidelines>
 * If there's not existing content for the section, write from scratch.
 * If there is existing content, consider it when writing the section.
-* Don't write fewer than 100 words or more than 300 words.
+* Write no fewer than 100 words but no more than 200 words.
 * Use clear language.
 * Use short paragraphs (2-4 sentences).
 * Use ## for section title (Markdown format).
@@ -129,15 +129,18 @@ CURRENT DATE AND TIME: {current_date_and_time}
 * Assign each unique URL a single citation number in your response.
 * End with "### Sources" listing each source with corresponding numbers.
 * Number sources sequentially without gaps (e.g. 1, 2, 3) regardless of which you choose.
+* Source should be formatted as a Markdown list item with "-".
 * Example:
-  [1] Source Title (URL)
-  [2] Source Title (URL)
+  "- [1] Source Title (URL)"
+  "- [2] Source Title (URL)"
+  "- [3] Source Title (URL)"
 </Citations>
 
 <Final Check>
 (1) Confirm each URL appears only once in the source list.
 (2) Verify that your claims are grounded in the provided source material.
 (3) Ensure that sources are numbered sequentially (e.g. 1, 2, 3) without gaps.
+(4) Ensure that each source is listed on its own new line.
 </Final Check>"""
 
 
@@ -229,21 +232,22 @@ Guidelines:
 
 If you're tasked with writing an introduction:
 * Use # for the report title (Markdown format).
+* The report title can and likely should be different from the report topic.
 * Write in clear and simple language.
 * Focus on important information.
+* Use between 50 and 125 words.
 * No sources section.
-* Use between 50 and 200 words.
 
 If you're tasked with writing a conclusion or summary:
 * Use ## for the section title (Markdown format).
-* Use between 50 and 200 words.
-* No sources section.
 * Provide specific implications.
+* Use between 50 and 125 words.
+* No sources section.
 </TASK>
 
 <FINAL CHECK>
-* Introduction: (1) between 50 and 200 words, (2) # for the report title, (3) no sources section.
-* Conclusion: (1) between 50 and 200 words, (2) ## for the section title, (3) no sources section.
+* Introduction: (1) between 50 and 125 words, (2) # for the report title, (3) no sources section.
+* Conclusion: (1) between 50 and 125 words, (2) ## for the section title, (3) no sources section.
 * Do not include any preamble in your response.
 * Do not include or reference word counts.
 * Use Markdown format.

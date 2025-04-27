@@ -1,32 +1,65 @@
-import asyncio
 import os
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
+import json
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from sse_starlette.sse import EventSourceResponse
+import uvicorn
 
 from graph import graph
-from state import ReportStateInput
+from state import ReportInputState
 
-async def run_agent(topic: str):
+load_dotenv()
 
-    # API keys
-    load_dotenv()
-    if not os.getenv("GOOGLE_API_KEY") or not os.getenv("OPENAI_API_KEY") or not os.getenv("TAVILY_API_KEY"):
-        print("ERROR: GOOGLE_API_KEY, OPENAI_API_KEY, and TAVILY_API_KEY must be set")
-        return
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    missing_keys = [k for k in ("GOOGLE_API_KEY", "OPENAI_API_KEY", "TAVILY_API_KEY") if not os.getenv(k)]
+    if missing_keys:
+        raise RuntimeError(f"Missing API keys: {', '.join(missing_keys)}")
+    yield
 
-    # Prepare the input
-    inputs: ReportStateInput = {"topic": topic}
+app = FastAPI(lifespan=lifespan)
 
-    # Invoke the graph with ainvoke() because the graph contains async steps
-    try:
-        state = await graph.ainvoke(inputs)
-        # Print the report
-        print("\n")
-        print(state["finished_report"])
-        print("\n")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # tighten before deployment
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+@app.get("/report")
+async def stream_report(topic: str, request: Request):
+    """
+    SSE endpoint that streams updates as the graph runs.
+    """
+
+    input_state = ReportInputState(topic=topic)
+
+    async def event_generator():
+        try:
+            # https://langchain-ai.github.io/langgraph/how-tos/streaming-subgraphs/
+            async for update in graph.astream(input_state, stream_mode="updates", subgraphs=True):
+                if await request.is_disconnected():
+                    break
+                node, diff = next(iter(update[1].items()))
+                payload = {
+                    "node": node,
+                    "diff": jsonable_encoder(diff)
+                }
+                yield {
+                    "event": "step",
+                    "data": json.dumps(payload)
+                }
+        except Exception as e:
+            yield {
+                "event": "error",
+                "data": {"error": str(e)}
+            }
+
+    return EventSourceResponse(event_generator())
 
 if __name__ == "__main__":
-    report_topic = "Trump tariffs"
-    asyncio.run(run_agent(report_topic))
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
