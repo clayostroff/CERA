@@ -2,7 +2,7 @@
 
 .ds_store
 
-.env*
+.env
 backend/.env
 
 backend/__pycache__/
