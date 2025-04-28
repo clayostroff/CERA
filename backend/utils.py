@@ -72,11 +72,11 @@ async def tavily_search(search_queries: list[str], depth: Literal['basic', 'adva
     for query in search_queries:
             search_tasks.append(
                 async_tavily_client.search(
-                    query,
+                    query = query,
                     search_depth = depth,
-                    topic = "news",
-                    max_results = 3, # results per query
-                    raw_content = True
+                    # topic = "news",
+                    max_results = 2, # results per query
+                    include_raw_content = True
                 )
             )
 
@@ -128,7 +128,7 @@ def format_search_results(search_responses: list[dict]) -> str:
 
         raw_content = source.get('raw_content', '') or ""
 
-        # Potentially clean raw content with Gemini 2.0 Flash-Lite
+        # Potentially clean raw content with a lightweight model
 
         if len(raw_content) > 10000:
             raw_content = raw_content[:10000] + "... [truncated at 10000 chars]"

@@ -63,8 +63,7 @@ async def plan_report(state: ReportState) -> dict:
     # configurable = Config.from_runnable_config(config)
     # report_structure = configurable.report_structure
     # num_queries = configurable.planning_queries
-    
-    num_queries = 2
+
     report_structure = dedent("""
         (1) Introduction to the topic:
             * Brief overview of matter at hand
@@ -76,6 +75,8 @@ async def plan_report(state: ReportState) -> dict:
             * Should include key take-aways
             * No research needed
     """)
+
+    num_queries = 2
 
     query = [topic]
     search_result = await execute_searches(query, depth="advanced")
@@ -110,7 +111,7 @@ async def plan_report(state: ReportState) -> dict:
         context=search_results,
     )
 
-    human_message = """Generate the sections of the report. Your response must include a sections field containing a list of sections. Each section must include name, description, research, and content fields."""
+    human_message = "Generate the sections of the report. Your response must include a sections field containing a list of sections. Each section must include name, description, research, and content fields."
     
     # Report planner LLM
     llm = init_chat_model(model="o4-mini", model_provider="openai")
@@ -166,7 +167,7 @@ def generate_queries(state: SectionState):
     # configurable = Config.from_runnable_config(config)
     # num_queries = configurable.queries_per_section
 
-    num_queries = 3
+    num_queries = 2
 
     # Generate queries
     llm = init_chat_model(model="gpt-4.1", model_provider="openai")
@@ -347,11 +348,7 @@ def format_sections_as_string(state: ReportState) -> dict:
 
 def initiate_intro_and_conclusion_writing(state: ReportState):
     """
-    Creates parallel tasks to write non-researched sections (i.e. the introduction and conclusion).
-    
-    EDGE
-
-    Identifies sections that don't need independent research and creates parallel tasks to write them.
+    Creates parallel tasks to write non-researched sections.
     
     Parameters:
         state: Current report state with finished sections
@@ -360,7 +357,6 @@ def initiate_intro_and_conclusion_writing(state: ReportState):
         List of Send commands for parallelized section writing
     """
 
-    # Writes sections that do not require research in parallel via Send()
     return [
         Send(
             "write_intro_and_conclusion",
@@ -387,7 +383,6 @@ def compile_report(state: ReportState):
         Dict containing the complete report
     """
 
-    # Get sections
     sections = state["sections"]
     finished_sections = {section.name: section.content for section in state["finished_sections_list"]}
 

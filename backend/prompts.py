@@ -48,13 +48,13 @@ Context to help plan the sections of the report:
 </CONTEXT>
 
 <TASK>
-Generate a list of sections for the report. Your plan should be focused, with no overlapping sections or unnecessary filler.
+Generate a list of sections for the report. Your plan should be concise and focused, with no overlapping sections or unnecessary filler. LONGER DOES NOT EQUAL BETTER. MORE SECTIONS DOES NOT EQUAL BETTER.
 
-For example, a good report structure could (though not necessarily) look like this:
+For example, a good report could, though not necessarily, look like this:
 (1) Introduction
 (2) Overview of sub-topic 1
 (3) Overview of sub-topic 2
-(4) Conclusion
+(4) Summary.
 
 Fields (each section should have the following):
 * name: Name for this section of the report.
@@ -110,19 +110,18 @@ CURRENT DATE AND TIME: {current_date_and_time}
 
 <Task>
 1. Review the report topic, section name, and section topic carefully.
-2. If present, review any already-written section content. 
-3. Then, look at the provided source material.
-4. Decide which sources you will use to write the section.
-5. Write the section and list your sources. 
+2. Review any already-written section content, then look at the provided source material.
+3. Decide which sources you will use to write the section. You do not have to use every source.
+4. Write the section and list your sources. 
 </Task>
 
 <Writing Guidelines>
 * If there's not existing content for the section, write from scratch.
-* If there is existing content, consider it when writing the section.
-* Write no fewer than 100 words but no more than 200 words.
+* If there is existing content, consider it when writing.
 * Use clear language.
 * Use short paragraphs (2-4 sentences).
 * Use ## for section title (Markdown format).
+* Write no fewer than 100 words but no more than 200 words.
 </Writing Guidelines>
 
 <Citations>
