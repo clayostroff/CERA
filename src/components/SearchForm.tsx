@@ -19,11 +19,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
     const [backendStatus, setBackendStatus] = useState<'online' | 'offline' | 'checking'>('checking');
     
     // Check if the backend is running
+    const API_BASE = import.meta.env.VITE_API_URL;
     useEffect(() => {
-    axios.get('http://localhost:8000/docs', { timeout: 2000 })
-      .then(() => setBackendStatus('online'))
-      .catch(() => setBackendStatus('offline'));
-    }, []);
+      setBackendStatus('checking');
+      axios.get(`${API_BASE}/`, { timeout: 2000 })
+        .then(() => setBackendStatus('online'))
+        .catch(() => setBackendStatus('offline'));
+    }, [API_BASE]);
 
     const handleSubmit = async (e: React.FormEvent) =>
     {
