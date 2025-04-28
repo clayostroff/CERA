@@ -32,8 +32,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({ searchTopic, setTimelineSte
         const STEPS = ['plan_report', 'search_web', 'write_section', 'compile_report'];
 
     
+        const API_BASE = import.meta.env.VITE_API_URL;
         const es = new EventSource(
-            'http://localhost:8000/report?topic=' + encodeURIComponent(searchTopic)
+            `${API_BASE}/report?topic=${encodeURIComponent(searchTopic)}`
         );
     
         es.addEventListener('step', (evt) => 

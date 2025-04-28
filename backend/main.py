@@ -16,7 +16,7 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    missing_keys = [k for k in ("GOOGLE_API_KEY", "OPENAI_API_KEY", "TAVILY_API_KEY") if not os.getenv(k)]
+    missing_keys = [k for k in ("OPENAI_API_KEY", "TAVILY_API_KEY") if not os.getenv(k)]
     if missing_keys:
         raise RuntimeError(f"Missing API keys: {', '.join(missing_keys)}")
     yield
@@ -29,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/", status_code=200)
+def root():
+    return {"status": "OK"}
 
 @app.get("/report")
 async def stream_report(topic: str, request: Request):
