@@ -18,7 +18,7 @@ source .venv/bin/activate
 
 3. Install the backend dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 4. Install the frontend dependencies
