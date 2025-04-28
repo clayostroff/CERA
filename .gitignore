@@ -6,6 +6,4 @@ backend/.env
 
 backend/__pycache__/
 
-TODO.txt
-
 node_modules/
