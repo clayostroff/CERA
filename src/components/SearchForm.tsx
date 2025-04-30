@@ -31,7 +31,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     {
         e.preventDefault();
         
-        if (!question.trim()) {
+        if (question.trim() === '') {
             setError("Please ask a question or submit a report topic.")
             return;
         }
@@ -68,10 +68,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 </div>
             )}
             
-            <form 
-                onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-2"
-            >
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-2">
                 <div className="flex-grow relative">
                     <input
                         type="text"
@@ -87,6 +84,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     disabled={
                         isLoading ||
                         backendStatus === 'offline' ||
+                        question.trim() === '' ||
                         question.trim() === currentTopic
                     }
                     className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -99,9 +97,19 @@ const SearchForm: React.FC<SearchFormProps> = ({
                     Generate
                 </button>
             </form>
-            
+
             {error && (
-                <div className="mt-2 text-red-500 text-sm">{error}</div>
+                <main className="container mx-auto px-0 py-8">
+                    <div className="bg-red-100 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
+                        <div className="flex items-start">
+                            <AlertCircle className="mr-2 mt-0.5 flex-shrink-0" size={20} />
+                            <div>
+                                <h2 className="text-md font-semibold inline">Error: </h2>
+                                <p className="text-md inline">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
             )}
         </div>
     );
