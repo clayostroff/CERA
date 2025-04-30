@@ -27,7 +27,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://clayostroff.com"
+        "https://cera.clayostroff.com",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
