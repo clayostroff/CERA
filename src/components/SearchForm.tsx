@@ -18,7 +18,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
     const [error, setError] = useState('');
     const [backendStatus, setBackendStatus] = useState<'online' | 'offline' | 'checking'>('checking');
     
-    // Check if the backend is running
     const API_BASE = import.meta.env.VITE_API_URL;
     useEffect(() => {
       setBackendStatus('checking');

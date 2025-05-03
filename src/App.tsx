@@ -8,8 +8,13 @@ import StatusTimeline from './components/StatusTimeline';
 function App() {
     const [darkMode, setDarkMode] = useState(() => {
         const savedTheme = localStorage.getItem('theme');
-        return savedTheme === 'dark' || 
-            (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches);
+        if (savedTheme === 'dark') {
+            return true;
+        } else if (savedTheme === 'light') {
+            return false;
+        } else {
+            return window.matchMedia('(prefers-color-scheme: light)').matches;
+        }
     });
     
     const [searchTopic, setSearchTopic] = useState<string | null>(null);
@@ -27,11 +32,10 @@ function App() {
     }, []);
     
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 px-4 sm:px-4 lg:px-8 py-4 sm:py-4 lg:py-8">
             <main className="container mx-auto px-4 py-8">
                 <h1 className="flex items-center justify-between mb-8">
                     <div className="flex items-center space-x-4 px-0.5">
-
                         <span className="text-4xl font-bold text-gray-800 dark:text-white">
                             Current Events Research Agent
                         </span>
